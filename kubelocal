@@ -1,0 +1,42 @@
+#!/bin/bash
+
+VERSION="0.9.1"
+
+if [[ ${UID} != 0 ]]; then
+	echo "Must be root"
+	exit 1
+fi
+
+usage() {
+	echo "kubelocal start|stop|restart"
+	exit 0
+}
+
+start() {
+	echo "Starting local kube node..."
+	/usr/bin/kubeadm init --pod-network-cidr=10.244.0.0/16
+	
+	"${HOME}"/bin/google-cloud-sdk/bin/kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v"${VERSION}"/Documentation/kube-flannel.yml
+}
+
+stop() {
+	echo "Stopping local kube node..."
+	/usr/bin/kubeadm reset
+}
+
+case $1 in
+	start|init)
+		start
+		;;
+	stop|halt)
+		stop
+		;;
+	restart|reset)
+		stop
+		start
+		;;
+	*)
+		usage
+		;;
+esac
+
