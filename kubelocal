@@ -22,18 +22,18 @@ start() {
 		answer='A'
 		read -p "${HOME_DIR}/.kube/config already exists. Delete, Move or Abort? D/M/[A]: " answer
 		case ${answer} in
-			D)
+			D|d)
 				echo "Overwriting ${HOME_DIR}/.kube/config"
 				cp -i /etc/kubernetes/admin.conf ${HOME_DIR}/.kube/config
 				chown ${SUDO_UID}:${SUDO_GID} ${HOME_DIR}/.kube/config
 				;;
-			M)
+			M|m)
 				echo "Backup copy will be located at ${HOME_DIR}/.kube/config.bak"
 				mv ${HOME_DIR}/.kube/config{,.bak}
 				cp -i /etc/kubernetes/admin.conf ${HOME_DIR}/.kube/config
 				chown ${SUDO_UID}:${SUDO_GID} ${HOME_DIR}/.kube/config
 				;;
-			A)
+			A|a)
 				echo "Doing nothing with ${HOME_DIR}/.kube/config."
 				echo "Continuing with setup. You will need to configure kubectl yourself once the script completes"
 				;;
@@ -44,8 +44,7 @@ start() {
 		esac
 	fi
 
-	sleep 5 # Give the API a few seconds before trying to install flannel
-	kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v"${FLANNEL_VERSION}"/Documentation/kube-flannel.yml
+	sudo -u ${SUDO_USER} kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v"${FLANNEL_VERSION}"/Documentation/kube-flannel.yml
 }
 
 stop() {
@@ -62,7 +61,6 @@ case $1 in
 		;;
 	restart|reset)
 		stop
-		sleep 3 # Wait a few seconds for things to finish spooling down
 		start
 		;;
 	*)
